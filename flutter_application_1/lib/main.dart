@@ -1,133 +1,122 @@
-// Homework 2: Safe ATM Banking Terminal Simulator
-// Demonstrates: functions, named parameters, arrow syntax (=>), and
-// Sound Null Safety operators (?, ??, !)
-
-// -----------------------------------------------------------------------
-// 1. checkBalance
-//    - Arrow function
-//    - name: required String, balance: required double
-// -----------------------------------------------------------------------
-void checkBalance({required String name, required double balance}) =>
-    print('[$name] Current available balance: \$${balance.toStringAsFixed(2)}');
-
-// -----------------------------------------------------------------------
-// 2. deposit
-//    - currentBalance: required double
-//    - amount: optional, nullable double (double?)
-//    - Uses ?? to default a null amount to 0.0
-// -----------------------------------------------------------------------
-double deposit({required double currentBalance, double? amount}) {
-  // Safely unpack amount, defaulting to 0.0 if null
-  final double depositAmount = amount ?? 0.0;
-
-  final double updatedBalance = currentBalance + depositAmount;
-
-  print('Receipt: Deposited \$${depositAmount.toStringAsFixed(2)} | '
-      'New balance: \$${updatedBalance.toStringAsFixed(2)}');
-
-  return updatedBalance;
-}
-
-// -----------------------------------------------------------------------
-// 3. withdraw
-//    - name: required String
-//    - currentBalance: required double
-//    - amount: optional, nullable double
-//    - pinCode: optional, nullable int
-//    - Uses ?? for PIN default and amount default
-// -----------------------------------------------------------------------
-double withdraw({
-  required String name,
-  required double currentBalance,
-  double? amount,
-  int? pinCode,
-}) {
-  const int correctPin = 1234;
-
-  // If pinCode is null or missing, fall back to an invalid default (0000)
-  final int enteredPin = pinCode ?? 0000;
-
-  if (enteredPin != correctPin) {
-    print('Transaction Declined for $name: Incorrect PIN.');
-    return currentBalance;
-  }
-
-  // Safely unpack amount, defaulting to 0.0 if null
-  final double withdrawAmount = amount ?? 0.0;
-
-  if (withdrawAmount > currentBalance) {
-    print('Transaction Declined for $name: Insufficient funds '
-        '(requested \$${withdrawAmount.toStringAsFixed(2)}, '
-        'available \$${currentBalance.toStringAsFixed(2)}).');
-    return currentBalance;
-  }
-
-  final double updatedBalance = currentBalance - withdrawAmount;
-
-  print('Transaction Successful for $name: Withdrew '
-      '\$${withdrawAmount.toStringAsFixed(2)} | '
-      'New balance: \$${updatedBalance.toStringAsFixed(2)}');
-
-  return updatedBalance;
-}
-
-// -----------------------------------------------------------------------
-// main: demonstrates all three functions, including the null-assertion (!)
-// operator when we are certain a nullable value is safe to unwrap.
-// -----------------------------------------------------------------------
 void main() {
-  const String user = 'Alice';
-  double balance = 500.0;
+  // ---------- TASK 1: Multiplication table ----------
+  print("===== TASK 1: Multiplication table =====");
+  printMultiplicationTable(3);
 
-  print('--- ATM Session Start ---');
-  checkBalance(name: user, balance: balance);
-
-  // Deposit with a valid amount
-  balance = deposit(currentBalance: balance, amount: 150.0);
-
-  // Deposit with a null amount -> defaults to 0.0 via ??
-  double? missingDeposit;
-  balance = deposit(currentBalance: balance, amount: missingDeposit);
-
-  checkBalance(name: user, balance: balance);
-
-  // Withdraw with wrong PIN -> declined
-  balance = withdraw(
-    name: user,
-    currentBalance: balance,
-    amount: 100.0,
-    pinCode: 4321,
-  );
-
-  // Withdraw with amount exceeding balance -> declined
-  balance = withdraw(
-    name: user,
-    currentBalance: balance,
-    amount: 999999.0,
-    pinCode: 1234,
-  );
-
-  // Withdraw with a stored nullable PIN we are CONFIDENT is set.
-  // The null-assertion operator (!) unwraps it, since we've already
-  // checked it is not null.
-  int? storedPin = 1234;
-  if (storedPin != null) {
-    balance = withdraw(
-      name: user,
-      currentBalance: balance,
-      amount: 200.0,
-      pinCode: storedPin!, // safe unwrap: guarded by the null check above
-    );
+  // ---------- TASK 2: Next day ----------
+  print("\n===== TASK 2: Next day =====");
+  final task2Cases = [
+    [5, 9, 2026],
+    [28, 2, 2024],
+    [28, 2, 2026],
+    [29, 2, 2026], // invalid: 2026 is not a leap year
+    [28, 2, 2100],
+    [29, 2, 2000], // 2000 IS a leap year
+    [31, 12, 2025],
+  ];
+  for (final c in task2Cases) {
+    final result = nextDay(c[0], c[1], c[2]);
+    print("${fmt(c[0], c[1], c[2])} -> $result");
   }
 
-  // Withdraw with no PIN provided at all -> defaults to 0000 -> declined
-  balance = withdraw(
-    name: user,
-    currentBalance: balance,
-    amount: 50.0,
-  );
+  // ---------- TASK 3: Vowel counter ----------
+  print("\n===== TASK 3: Vowel counter =====");
+  const phrase = "flutter mobile development";
+  print("\"$phrase\" -> ${countVowels(phrase)}");
 
-  print('--- Final Balance ---');
-  checkBalance(name: user, balance: balance);
-  print('--- ATM Session End ---');
+  // ---------- TASK 4: Manual min & max ----------
+  print("\n===== TASK 4: Manual min & max =====");
+  List<int> numbers = [14, 88, 3, 42, 99, 12, 67];
+  List<int> numbers1 = [234, 34, 123, 44, 949, 112, 67];
+
+  final minMax1 = findMinMax(numbers);
+  final minMax2 = findMinMax(numbers1);
+  print("numbers  -> max: ${minMax1['max']}, min: ${minMax1['min']}");
+  print("numbers1 -> max: ${minMax2['max']}, min: ${minMax2['min']}");
+
+  // ---------- TASK 5: Prime checker ----------
+  print("\n===== TASK 5: Prime checker =====");
+  for (final n in [3, 6, 1, 2, 17, 100, 97]) {
+    print("$n -> ${isPrime(n) ? "prime number" : "not prime number"}");
+  }
+}
+
+// ===================== TASK 1 =====================
+void printMultiplicationTable(int digit) {
+  print("MULTIPLICATION TABLE for digit $digit");
+  for (int i = 1; i <= 10; i++) {
+    print("$digit * $i = ${i * digit}");
+  }
+}
+
+// ===================== TASK 2 =====================
+bool isLeapYear(int year) {
+  if (year % 400 == 0) return true;
+  if (year % 100 == 0) return false;
+  return year % 4 == 0;
+}
+
+int daysInMonth(int month, int year) {
+  const daysNormal = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (month == 2 && isLeapYear(year)) return 29;
+  return daysNormal[month - 1];
+}
+
+bool isValidDate(int day, int month, int year) {
+  if (month < 1 || month > 12) return false;
+  if (day < 1) return false;
+  return day <= daysInMonth(month, year);
+}
+
+String nextDay(int day, int month, int year) {
+  if (!isValidDate(day, month, year)) return "invalid date";
+
+  int d = day + 1;
+  int m = month;
+  int y = year;
+
+  if (d > daysInMonth(month, year)) {
+    d = 1;
+    m += 1;
+    if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+  }
+  return fmt(d, m, y);
+}
+
+String fmt(int day, int month, int year) =>
+    "${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year";
+
+// ===================== TASK 3 =====================
+int countVowels(String text) {
+  const vowels = "aeiouAEIOU";
+  int count = 0;
+  for (int i = 0; i < text.length; i++) {
+    if (vowels.contains(text[i])) count++;
+  }
+  return count;
+}
+
+// ===================== TASK 4 =====================
+Map<String, int> findMinMax(List<int> list) {
+  int max = list[0];
+  int min = list[0];
+  for (int i = 1; i < list.length; i++) {
+    if (list[i] > max) max = list[i];
+    if (list[i] < min) min = list[i];
+  }
+  return {"max": max, "min": min};
+}
+
+// ===================== TASK 5 =====================
+bool isPrime(int n) {
+  if (n < 2) return false;
+  if (n == 2) return true;
+  if (n % 2 == 0) return false;
+  for (int i = 3; i * i <= n; i += 2) {
+    if (n % i == 0) return false;
+  }
+  return true;
 }
